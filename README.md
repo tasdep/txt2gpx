@@ -21,3 +21,6 @@ npx -p node@20 node scripts/smoke.mjs
 ## Publish
 
 This is a static app, so it can be published with GitHub Pages, Cloudflare Pages, Netlify, or any static host.
+
+This repo includes a GitHub Pages workflow. Pushes to `main` deploy the app from
+the repository root.
