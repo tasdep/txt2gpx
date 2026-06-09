@@ -6,6 +6,7 @@ import {
   metersToLngLat,
   slugify,
 } from "./route-core.js";
+import { textToStrokePaths, textToUnderlinedPaths } from "./text-paths.js";
 
 const INITIAL_CENTER = [8.5417, 47.3769];
 
@@ -181,25 +182,15 @@ function render() {
 }
 
 function buildRoute() {
-  const strokePaths = textToLocalPaths(state.text || " ");
+  const strokePaths = state.connectStrokes
+    ? textToUnderlinedPaths(hershey, state.text || " ", state.scale)
+    : textToStrokePaths(hershey, state.text || " ", state.scale);
   return buildRouteFromLocalPaths(strokePaths, {
     center: state.center,
     rotation: state.rotation,
     spacing: state.spacing,
-    connectStrokes: state.connectStrokes,
+    connectStrokes: true,
   });
-}
-
-function textToLocalPaths(text) {
-  const safeText = [...text]
-    .map((char) => (char === " " || isSupportedChar(char) ? char : "?"))
-    .join("");
-  const result = hershey.stringToPaths(safeText);
-  return result.paths.map((path) => path.map(([x, y]) => [x * state.scale, -y * state.scale]));
-}
-
-function isSupportedChar(char) {
-  return /^[a-zA-Z.,:;!?"°$\/()|\-+='#&\\_*[\]{}<>~%@]$/.test(char);
 }
 
 function downloadGpx(points, name) {
