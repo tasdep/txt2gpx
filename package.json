@@ -1,0 +1,13 @@
+{
+  "name": "txt2gpx",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "serve": "python3 -m http.server 5173",
+    "smoke": "node scripts/smoke.mjs"
+  },
+  "dependencies": {
+    "hershey": "2.1.7"
+  }
+}

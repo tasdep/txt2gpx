@@ -7,10 +7,16 @@ The first version uses a Hershey single-line font so exported courses follow str
 ## Run locally
 
 ```sh
-python3 -m http.server 5173
+npm run serve
 ```
 
 Then open <http://localhost:5173>.
+
+If you want a temporary modern Node without changing the machine:
+
+```sh
+npx -p node@20 node scripts/smoke.mjs
+```
 
 ## Publish
 
