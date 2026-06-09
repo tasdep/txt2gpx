@@ -5,7 +5,7 @@ Type text, place it on a map, transform it, and export a GPX course you can impo
 The app uses a Hershey single-line font so exported courses follow strokes rather
 than font outlines. By default it connects letters with an underline route, which
 keeps the Strava/Garmin trace intentional instead of adding random diagonals
-between strokes.
+between strokes. The underline gap is adjustable in meters.
 
 ## Run locally
 

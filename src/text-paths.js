@@ -1,6 +1,6 @@
 const LETTER_GAP_UNITS = 8;
 const SPACE_ADVANCE_UNITS = 18;
-const UNDERLINE_OFFSET_UNITS = 4;
+const DEFAULT_UNDERLINE_GAP_M = 95;
 
 export function textToStrokePaths(hershey, text, scale) {
   const safeText = sanitizeText(text);
@@ -8,7 +8,7 @@ export function textToStrokePaths(hershey, text, scale) {
   return result.paths.map((path) => path.map(([x, y]) => [x * scale, -y * scale]));
 }
 
-export function textToUnderlinedPaths(hershey, text, scale) {
+export function textToUnderlinedPaths(hershey, text, scale, options = {}) {
   const glyphs = layoutGlyphs(hershey, sanitizeText(text || " "));
   const drawableGlyphs = glyphs.filter((glyph) => !glyph.isSpace);
   if (drawableGlyphs.length === 0) return [];
@@ -16,26 +16,27 @@ export function textToUnderlinedPaths(hershey, text, scale) {
   const totalWidth = glyphs[glyphs.length - 1].right;
   const xOffset = -totalWidth / 2;
   const bottomY = Math.max(...drawableGlyphs.map((glyph) => glyph.bottom));
-  const underlineY = (bottomY + UNDERLINE_OFFSET_UNITS) * scale;
+  const underlineGap =
+    options.underlineGap === undefined ? DEFAULT_UNDERLINE_GAP_M : options.underlineGap;
+  const baselineY = bottomY * scale;
+  const underlineY = bottomY * scale + underlineGap;
   const left = drawableGlyphs[0].left * scale + xOffset * scale;
   const right = drawableGlyphs[drawableGlyphs.length - 1].right * scale + xOffset * scale;
-  const route = [[left, underlineY]];
+  const route = [];
 
   for (const glyph of glyphs) {
     if (glyph.isSpace) continue;
 
-    for (const rawPath of glyph.paths) {
-      const path = rawPath.map(([x, y]) => [(x + glyph.x + xOffset) * scale, -y * scale]);
-      const oriented = orientFromUnderline(path, underlineY);
-      const start = oriented[0];
-      const end = oriented[oriented.length - 1];
-
-      pushPoint(route, [start[0], underlineY]);
-      for (const point of oriented) pushPoint(route, point);
-      pushPoint(route, [end[0], underlineY]);
-    }
+    const paths = glyph.paths.map((rawPath) =>
+      rawPath.map(([x, y]) => [(x + glyph.x + xOffset) * scale, -y * scale]),
+    );
+    appendRoutedStrokes(route, paths, baselineY);
   }
 
+  const current = route[route.length - 1];
+  pushPoint(route, [current[0], baselineY]);
+  pushPoint(route, [current[0], underlineY]);
+  pushPoint(route, [left, underlineY]);
   pushPoint(route, [right, underlineY]);
   return [route];
 }
@@ -78,12 +79,60 @@ function layoutGlyphs(hershey, text) {
   return glyphs;
 }
 
-function orientFromUnderline(path, underlineY) {
-  const first = path[0];
-  const last = path[path.length - 1];
-  const firstDistance = Math.abs(first[1] - underlineY);
-  const lastDistance = Math.abs(last[1] - underlineY);
-  return lastDistance < firstDistance ? [...path].reverse() : path;
+function appendRoutedStrokes(route, paths, baselineY) {
+  const remaining = paths.map((path) => [...path]);
+
+  while (remaining.length > 0) {
+    const choice = chooseNextPath(route[route.length - 1], remaining);
+    remaining.splice(choice.index, 1);
+
+    const path = choice.reversed ? [...choice.path].reverse() : choice.path;
+    const start = path[0];
+
+    if (route.length > 0) {
+      const current = route[route.length - 1];
+      pushPoint(route, [current[0], baselineY]);
+      pushPoint(route, [start[0], baselineY]);
+    }
+
+    for (const point of path) pushPoint(route, point);
+  }
+}
+
+function chooseNextPath(current, paths) {
+  if (!current) {
+    let bestIndex = 0;
+    let bestX = Infinity;
+    for (let index = 0; index < paths.length; index += 1) {
+      const path = paths[index];
+      const x = Math.min(path[0][0], path[path.length - 1][0]);
+      if (x < bestX) {
+        bestX = x;
+        bestIndex = index;
+      }
+    }
+    const path = paths[bestIndex];
+    return { index: bestIndex, path, reversed: path[path.length - 1][0] < path[0][0] };
+  }
+
+  let best = { index: 0, path: paths[0], reversed: false, distance: Infinity };
+  for (let index = 0; index < paths.length; index += 1) {
+    const path = paths[index];
+    const startDistance = distance(current, path[0]);
+    const endDistance = distance(current, path[path.length - 1]);
+    if (startDistance < best.distance) {
+      best = { index, path, reversed: false, distance: startDistance };
+    }
+    if (endDistance < best.distance) {
+      best = { index, path, reversed: true, distance: endDistance };
+    }
+  }
+
+  return best;
+}
+
+function distance(a, b) {
+  return Math.hypot(a[0] - b[0], a[1] - b[1]);
 }
 
 function pushPoint(points, point) {

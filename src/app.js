@@ -18,6 +18,7 @@ const state = {
   rotation: 0,
   spacing: 8,
   connectStrokes: true,
+  underlineGap: 95,
 };
 
 const els = {
@@ -30,6 +31,9 @@ const els = {
   spacing: document.querySelector("#spacingInput"),
   spacingValue: document.querySelector("#spacingValue"),
   connect: document.querySelector("#connectInput"),
+  underlineGap: document.querySelector("#underlineGapInput"),
+  underlineGapValue: document.querySelector("#underlineGapValue"),
+  underlineGapRow: document.querySelector("#underlineGapRow"),
   centerButton: document.querySelector("#centerButton"),
   downloadButton: document.querySelector("#downloadButton"),
   distanceReadout: document.querySelector("#distanceReadout"),
@@ -119,6 +123,11 @@ function bindEvents() {
     render();
   });
 
+  els.underlineGap.addEventListener("input", () => {
+    state.underlineGap = Number(els.underlineGap.value);
+    render();
+  });
+
   els.centerButton.addEventListener("click", () => {
     const center = map.getCenter();
     state.center = [center.lng, center.lat];
@@ -174,6 +183,8 @@ function render() {
   els.scaleValue.value = `${state.scale} m/unit`;
   els.rotationValue.value = `${state.rotation} deg`;
   els.spacingValue.value = `${state.spacing} m`;
+  els.underlineGapValue.value = `${state.underlineGap} m`;
+  els.underlineGapRow.hidden = !state.connectStrokes;
   els.distanceReadout.textContent = `${(route.distance / 1000).toFixed(2)} km`;
 
   setSource("route", lineFeature(route.points));
@@ -183,7 +194,9 @@ function render() {
 
 function buildRoute() {
   const strokePaths = state.connectStrokes
-    ? textToUnderlinedPaths(hershey, state.text || " ", state.scale)
+    ? textToUnderlinedPaths(hershey, state.text || " ", state.scale, {
+        underlineGap: state.underlineGap,
+      })
     : textToStrokePaths(hershey, state.text || " ", state.scale);
   return buildRouteFromLocalPaths(strokePaths, {
     center: state.center,

@@ -7,7 +7,7 @@ const hershey = require("hershey");
 
 const text = "Hello world";
 const scale = 8;
-const paths = textToUnderlinedPaths(hershey, text, scale);
+const paths = textToUnderlinedPaths(hershey, text, scale, { underlineGap: 95 });
 const rawPaths = textToStrokePaths(hershey, text, scale);
 
 const route = buildRouteFromLocalPaths(paths, {
@@ -26,6 +26,12 @@ if (paths.length !== 1 || rawPaths.length <= paths.length) {
   throw new Error("Expected underlined text to be one continuous route over raw strokes");
 }
 
+const underlinedBounds = bounds(paths.flat());
+const rawBounds = bounds(rawPaths.flat());
+if (underlinedBounds.maxY - rawBounds.maxY < 90) {
+  throw new Error("Expected underline route to sit clearly below the raw text");
+}
+
 if (!gpx.includes("<trkseg>") || !gpx.includes("<trkpt ")) {
   throw new Error("Generated GPX is missing track data");
 }
@@ -36,6 +42,7 @@ console.log(
       text,
       points: route.points.length,
       rawStrokeCount: rawPaths.length,
+      underlineDropM: Number((underlinedBounds.maxY - rawBounds.maxY).toFixed(1)),
       distanceKm: Number((route.distance / 1000).toFixed(3)),
       firstPoint: route.points[0],
       lastPoint: route.points[route.points.length - 1],
@@ -44,3 +51,14 @@ console.log(
     2,
   ),
 );
+
+function bounds(points) {
+  const xs = points.map(([x]) => x);
+  const ys = points.map(([, y]) => y);
+  return {
+    minX: Math.min(...xs),
+    minY: Math.min(...ys),
+    maxX: Math.max(...xs),
+    maxY: Math.max(...ys),
+  };
+}
