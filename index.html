@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>txt2gpx</title>
+    <link rel="stylesheet" href="https://unpkg.com/maplibre-gl@5.12.0/dist/maplibre-gl.css" />
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <main class="app-shell">
+      <section class="toolbar" aria-label="Course controls">
+        <div class="brand">
+          <h1>txt2gpx</h1>
+          <span id="distanceReadout">0.00 km</span>
+        </div>
+
+        <label>
+          Text
+          <input id="textInput" type="text" value="HBD" autocomplete="off" />
+        </label>
+
+        <label>
+          Course name
+          <input id="nameInput" type="text" value="txt2gpx course" autocomplete="off" />
+        </label>
+
+        <div class="control-row">
+          <label>
+            Scale
+            <input id="scaleInput" type="range" min="2" max="40" step="1" value="8" />
+          </label>
+          <output id="scaleValue">8 m/unit</output>
+        </div>
+
+        <div class="control-row">
+          <label>
+            Rotate
+            <input id="rotationInput" type="range" min="-180" max="180" step="1" value="0" />
+          </label>
+          <output id="rotationValue">0 deg</output>
+        </div>
+
+        <div class="control-row">
+          <label>
+            Point spacing
+            <input id="spacingInput" type="range" min="2" max="25" step="1" value="8" />
+          </label>
+          <output id="spacingValue">8 m</output>
+        </div>
+
+        <label class="check-row">
+          <input id="connectInput" type="checkbox" checked />
+          Connect strokes
+        </label>
+
+        <div class="button-row">
+          <button id="centerButton" type="button">Place at map center</button>
+          <button id="downloadButton" type="button">Download GPX</button>
+        </div>
+
+        <p class="hint">Click the map to place the text. Drag the blue route to move it.</p>
+      </section>
+
+      <section class="map-wrap" aria-label="Map editor">
+        <div id="map"></div>
+      </section>
+    </main>
+
+    <script src="https://unpkg.com/maplibre-gl@5.12.0/dist/maplibre-gl.js"></script>
+    <script type="module" src="./src/app.js"></script>
+  </body>
+</html>

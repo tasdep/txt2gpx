@@ -1,0 +1,165 @@
+:root {
+  color-scheme: light;
+  font-family:
+    Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+    sans-serif;
+  background: #f3f6f1;
+  color: #17211b;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-width: 320px;
+}
+
+button,
+input {
+  font: inherit;
+}
+
+.app-shell {
+  display: grid;
+  grid-template-columns: minmax(280px, 360px) 1fr;
+  min-height: 100vh;
+}
+
+.toolbar {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 18px;
+  background: #fffdf8;
+  border-right: 1px solid #d8dfd7;
+  box-shadow: 0 1px 18px rgba(23, 33, 27, 0.08);
+  z-index: 2;
+}
+
+.brand {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+h1 {
+  margin: 0;
+  font-size: 1.25rem;
+  letter-spacing: 0;
+}
+
+#distanceReadout {
+  color: #315f52;
+  font-weight: 700;
+}
+
+label {
+  display: grid;
+  gap: 7px;
+  color: #435048;
+  font-size: 0.86rem;
+  font-weight: 700;
+}
+
+input[type="text"] {
+  width: 100%;
+  min-height: 42px;
+  padding: 9px 10px;
+  color: #17211b;
+  background: #ffffff;
+  border: 1px solid #bfc9c0;
+  border-radius: 6px;
+}
+
+input[type="range"] {
+  width: 100%;
+  accent-color: #1b7f6a;
+}
+
+.control-row {
+  display: grid;
+  grid-template-columns: 1fr 78px;
+  gap: 12px;
+  align-items: end;
+}
+
+output {
+  padding-bottom: 2px;
+  color: #315f52;
+  font-size: 0.82rem;
+  font-weight: 700;
+  text-align: right;
+  white-space: nowrap;
+}
+
+.check-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.button-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+button {
+  min-height: 42px;
+  padding: 9px 11px;
+  color: #ffffff;
+  background: #1b7f6a;
+  border: 0;
+  border-radius: 6px;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+button:first-child {
+  color: #213029;
+  background: #dfe9d7;
+}
+
+button:hover {
+  filter: brightness(0.96);
+}
+
+.hint {
+  margin: 0;
+  color: #66736b;
+  font-size: 0.86rem;
+  line-height: 1.4;
+}
+
+.map-wrap,
+#map {
+  min-height: 100vh;
+}
+
+#map {
+  width: 100%;
+}
+
+.maplibregl-canvas {
+  cursor: crosshair;
+}
+
+@media (max-width: 760px) {
+  .app-shell {
+    grid-template-columns: 1fr;
+    grid-template-rows: auto 1fr;
+  }
+
+  .toolbar {
+    border-right: 0;
+    border-bottom: 1px solid #d8dfd7;
+  }
+
+  .map-wrap,
+  #map {
+    min-height: 62vh;
+  }
+}
