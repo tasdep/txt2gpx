@@ -3,9 +3,9 @@
 Type text, place it on a map, transform it, and export a GPX course you can import into Garmin Connect.
 
 The app uses a Hershey single-line font so exported courses follow strokes rather
-than font outlines. By default it connects letters with an underline route, which
+than font outlines. By default it connects letters along the baseline, which
 keeps the Strava/Garmin trace intentional instead of adding random diagonals
-between strokes. The underline gap is adjustable in meters.
+between strokes.
 
 ## Run locally
 

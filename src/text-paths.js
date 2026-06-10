@@ -1,6 +1,5 @@
 const LETTER_GAP_UNITS = 8;
 const SPACE_ADVANCE_UNITS = 18;
-const DEFAULT_UNDERLINE_GAP_M = 95;
 
 export function textToStrokePaths(hershey, text, scale) {
   const safeText = sanitizeText(text);
@@ -8,7 +7,7 @@ export function textToStrokePaths(hershey, text, scale) {
   return result.paths.map((path) => path.map(([x, y]) => [x * scale, y * scale]));
 }
 
-export function textToUnderlinedPaths(hershey, text, scale, options = {}) {
+export function textToBaselinePaths(hershey, text, scale) {
   const glyphs = layoutGlyphs(hershey, sanitizeText(text || " "));
   const drawableGlyphs = glyphs.filter((glyph) => !glyph.isSpace);
   if (drawableGlyphs.length === 0) return [];
@@ -16,13 +15,10 @@ export function textToUnderlinedPaths(hershey, text, scale, options = {}) {
   const totalWidth = glyphs[glyphs.length - 1].right;
   const xOffset = -totalWidth / 2;
   const bottomY = Math.min(...drawableGlyphs.map((glyph) => glyph.bottom));
-  const underlineGap =
-    options.underlineGap === undefined ? DEFAULT_UNDERLINE_GAP_M : options.underlineGap;
   const baselineY = bottomY * scale;
-  const underlineY = bottomY * scale - underlineGap;
   const left = drawableGlyphs[0].left * scale + xOffset * scale;
   const right = drawableGlyphs[drawableGlyphs.length - 1].right * scale + xOffset * scale;
-  const route = [];
+  const route = [[left, baselineY]];
 
   for (const glyph of glyphs) {
     if (glyph.isSpace) continue;
@@ -35,9 +31,7 @@ export function textToUnderlinedPaths(hershey, text, scale, options = {}) {
 
   const current = route[route.length - 1];
   pushPoint(route, [current[0], baselineY]);
-  pushPoint(route, [current[0], underlineY]);
-  pushPoint(route, [left, underlineY]);
-  pushPoint(route, [right, underlineY]);
+  pushPoint(route, [right, baselineY]);
   return [route];
 }
 

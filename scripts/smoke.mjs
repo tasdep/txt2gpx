@@ -1,13 +1,13 @@
 import { createRequire } from "node:module";
 import { buildGpx, buildRouteFromLocalPaths } from "../src/route-core.js";
-import { textToStrokePaths, textToUnderlinedPaths } from "../src/text-paths.js";
+import { textToBaselinePaths, textToStrokePaths } from "../src/text-paths.js";
 
 const require = createRequire(import.meta.url);
 const hershey = require("hershey");
 
 const text = "Hello world";
 const scale = 8;
-const paths = textToUnderlinedPaths(hershey, text, scale, { underlineGap: 95 });
+const paths = textToBaselinePaths(hershey, text, scale);
 const rawPaths = textToStrokePaths(hershey, text, scale);
 const fPaths = textToStrokePaths(hershey, "F", scale);
 
@@ -24,13 +24,13 @@ if (route.points.length < 10) {
 }
 
 if (paths.length !== 1 || rawPaths.length <= paths.length) {
-  throw new Error("Expected underlined text to be one continuous route over raw strokes");
+  throw new Error("Expected baseline text to be one continuous route over raw strokes");
 }
 
-const underlinedBounds = bounds(paths.flat());
+const baselineBounds = bounds(paths.flat());
 const rawBounds = bounds(rawPaths.flat());
-if (rawBounds.minY - underlinedBounds.minY < 90) {
-  throw new Error("Expected underline route to sit clearly below the raw text");
+if (Math.abs(baselineBounds.minY - rawBounds.minY) > 0.1) {
+  throw new Error("Expected connector route to share the text baseline");
 }
 
 if (fPaths[0][0][1] <= fPaths[0][fPaths[0].length - 1][1]) {
@@ -47,7 +47,7 @@ console.log(
       text,
       points: route.points.length,
       rawStrokeCount: rawPaths.length,
-      underlineDropM: Number((rawBounds.minY - underlinedBounds.minY).toFixed(1)),
+      baselineOffsetM: Number((baselineBounds.minY - rawBounds.minY).toFixed(1)),
       distanceKm: Number((route.distance / 1000).toFixed(3)),
       firstPoint: route.points[0],
       lastPoint: route.points[route.points.length - 1],
