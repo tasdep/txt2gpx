@@ -9,6 +9,7 @@ const text = "Hello world";
 const scale = 8;
 const paths = textToUnderlinedPaths(hershey, text, scale, { underlineGap: 95 });
 const rawPaths = textToStrokePaths(hershey, text, scale);
+const fPaths = textToStrokePaths(hershey, "F", scale);
 
 const route = buildRouteFromLocalPaths(paths, {
   center: [8.5417, 47.3769],
@@ -28,8 +29,12 @@ if (paths.length !== 1 || rawPaths.length <= paths.length) {
 
 const underlinedBounds = bounds(paths.flat());
 const rawBounds = bounds(rawPaths.flat());
-if (underlinedBounds.maxY - rawBounds.maxY < 90) {
+if (rawBounds.minY - underlinedBounds.minY < 90) {
   throw new Error("Expected underline route to sit clearly below the raw text");
+}
+
+if (fPaths[0][0][1] <= fPaths[0][fPaths[0].length - 1][1]) {
+  throw new Error("Expected font top to map north of font bottom");
 }
 
 if (!gpx.includes("<trkseg>") || !gpx.includes("<trkpt ")) {
@@ -42,7 +47,7 @@ console.log(
       text,
       points: route.points.length,
       rawStrokeCount: rawPaths.length,
-      underlineDropM: Number((underlinedBounds.maxY - rawBounds.maxY).toFixed(1)),
+      underlineDropM: Number((rawBounds.minY - underlinedBounds.minY).toFixed(1)),
       distanceKm: Number((route.distance / 1000).toFixed(3)),
       firstPoint: route.points[0],
       lastPoint: route.points[route.points.length - 1],

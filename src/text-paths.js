@@ -5,7 +5,7 @@ const DEFAULT_UNDERLINE_GAP_M = 95;
 export function textToStrokePaths(hershey, text, scale) {
   const safeText = sanitizeText(text);
   const result = hershey.stringToPaths(safeText || " ");
-  return result.paths.map((path) => path.map(([x, y]) => [x * scale, -y * scale]));
+  return result.paths.map((path) => path.map(([x, y]) => [x * scale, y * scale]));
 }
 
 export function textToUnderlinedPaths(hershey, text, scale, options = {}) {
@@ -15,11 +15,11 @@ export function textToUnderlinedPaths(hershey, text, scale, options = {}) {
 
   const totalWidth = glyphs[glyphs.length - 1].right;
   const xOffset = -totalWidth / 2;
-  const bottomY = Math.max(...drawableGlyphs.map((glyph) => glyph.bottom));
+  const bottomY = Math.min(...drawableGlyphs.map((glyph) => glyph.bottom));
   const underlineGap =
     options.underlineGap === undefined ? DEFAULT_UNDERLINE_GAP_M : options.underlineGap;
   const baselineY = bottomY * scale;
-  const underlineY = bottomY * scale + underlineGap;
+  const underlineY = bottomY * scale - underlineGap;
   const left = drawableGlyphs[0].left * scale + xOffset * scale;
   const right = drawableGlyphs[drawableGlyphs.length - 1].right * scale + xOffset * scale;
   const route = [];
@@ -28,7 +28,7 @@ export function textToUnderlinedPaths(hershey, text, scale, options = {}) {
     if (glyph.isSpace) continue;
 
     const paths = glyph.paths.map((rawPath) =>
-      rawPath.map(([x, y]) => [(x + glyph.x + xOffset) * scale, -y * scale]),
+      rawPath.map(([x, y]) => [(x + glyph.x + xOffset) * scale, y * scale]),
     );
     appendRoutedStrokes(route, paths, baselineY);
   }
@@ -52,7 +52,7 @@ function layoutGlyphs(hershey, text) {
         x: cursor,
         left: cursor,
         right: cursor + SPACE_ADVANCE_UNITS,
-        bottom: 9,
+        bottom: -9,
         paths: [],
       });
       cursor += SPACE_ADVANCE_UNITS;
@@ -70,7 +70,7 @@ function layoutGlyphs(hershey, text) {
       x: cursor,
       left: cursor,
       right: cursor + width,
-      bottom: -glyph.bounds.minY,
+      bottom: glyph.bounds.minY,
       paths,
     });
     cursor += width + LETTER_GAP_UNITS;
