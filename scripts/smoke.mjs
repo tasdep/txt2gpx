@@ -29,8 +29,14 @@ if (paths.length !== 1 || rawPaths.length <= paths.length) {
 
 const baselineBounds = bounds(paths.flat());
 const rawBounds = bounds(rawPaths.flat());
+const nativeWidth = hershey.stringToPaths(text).bounds.maxX - hershey.stringToPaths(text).bounds.minX;
+const baselineWidth = (baselineBounds.maxX - baselineBounds.minX) / scale;
 if (Math.abs(baselineBounds.minY - rawBounds.minY) > 0.1) {
   throw new Error("Expected connector route to share the text baseline");
+}
+
+if (Math.abs(nativeWidth - baselineWidth) > 0.1) {
+  throw new Error("Expected baseline text width to match Hershey native spacing");
 }
 
 if (fPaths[0][0][1] <= fPaths[0][fPaths[0].length - 1][1]) {
@@ -48,6 +54,7 @@ console.log(
       points: route.points.length,
       rawStrokeCount: rawPaths.length,
       baselineOffsetM: Number((baselineBounds.minY - rawBounds.minY).toFixed(1)),
+      widthUnits: Number(baselineWidth.toFixed(1)),
       distanceKm: Number((route.distance / 1000).toFixed(3)),
       firstPoint: route.points[0],
       lastPoint: route.points[route.points.length - 1],

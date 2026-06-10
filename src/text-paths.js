@@ -1,5 +1,4 @@
-const LETTER_GAP_UNITS = 8;
-const SPACE_ADVANCE_UNITS = 18;
+const SPACE_ADVANCE_UNITS = 12;
 
 export function textToStrokePaths(hershey, text, scale) {
   const safeText = sanitizeText(text);
@@ -37,19 +36,22 @@ export function textToBaselinePaths(hershey, text, scale) {
 
 function layoutGlyphs(hershey, text) {
   const glyphs = [];
-  let cursor = 0;
+  const advances = measureAdvances(hershey, text);
 
-  for (const char of text) {
+  for (let index = 0; index < text.length; index += 1) {
+    const char = text[index];
+    const cursor = advances[index].start;
+    const advanceWidth = advances[index].end - advances[index].start;
+
     if (char === " ") {
       glyphs.push({
         isSpace: true,
         x: cursor,
         left: cursor,
-        right: cursor + SPACE_ADVANCE_UNITS,
+        right: cursor + advanceWidth,
         bottom: -9,
         paths: [],
       });
-      cursor += SPACE_ADVANCE_UNITS;
       continue;
     }
 
@@ -63,34 +65,65 @@ function layoutGlyphs(hershey, text) {
       isSpace: false,
       x: cursor,
       left: cursor,
-      right: cursor + width,
+      right: cursor + advanceWidth,
       bottom: glyph.bounds.minY,
       paths,
     });
-    cursor += width + LETTER_GAP_UNITS;
   }
 
   return glyphs;
 }
 
+function measureAdvances(hershey, text) {
+  const advances = [];
+  let previousWidth = 0;
+
+  for (let index = 0; index < text.length; index += 1) {
+    const prefix = text.slice(0, index + 1);
+    const prefixBounds = prefix.trim().length === 0 ? null : hershey.stringToPaths(prefix).bounds;
+    const width = prefixBounds
+      ? prefixBounds.maxX - prefixBounds.minX
+      : (index + 1) * SPACE_ADVANCE_UNITS;
+    advances.push({ start: previousWidth, end: width });
+    previousWidth = width;
+  }
+
+  return advances;
+}
+
 function appendRoutedStrokes(route, paths, baselineY) {
   const remaining = paths.map((path) => [...path]);
 
-  while (remaining.length > 0) {
+  while (remaining.length > 1) {
     const choice = chooseNextPath(route[route.length - 1], remaining);
     remaining.splice(choice.index, 1);
 
     const path = choice.reversed ? [...choice.path].reverse() : choice.path;
-    const start = path[0];
-
-    if (route.length > 0) {
-      const current = route[route.length - 1];
-      pushPoint(route, [current[0], baselineY]);
-      pushPoint(route, [start[0], baselineY]);
-    }
-
-    for (const point of path) pushPoint(route, point);
+    appendStroke(route, path, baselineY);
   }
+
+  if (remaining.length === 1) {
+    const path = orientForBaselineFinish(remaining[0], baselineY);
+    appendStroke(route, path, baselineY);
+  }
+}
+
+function appendStroke(route, path, baselineY) {
+  const start = path[0];
+
+  if (route.length > 0) {
+    const current = route[route.length - 1];
+    pushPoint(route, [current[0], baselineY]);
+    pushPoint(route, [start[0], baselineY]);
+  }
+
+  for (const point of path) pushPoint(route, point);
+}
+
+function orientForBaselineFinish(path, baselineY) {
+  const firstDistance = Math.abs(path[0][1] - baselineY);
+  const lastDistance = Math.abs(path[path.length - 1][1] - baselineY);
+  return firstDistance < lastDistance ? [...path].reverse() : path;
 }
 
 function chooseNextPath(current, paths) {
