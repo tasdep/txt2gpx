@@ -2,6 +2,8 @@
 
 Type text, place it on a map, transform it, and export a GPX course you can import into Garmin Connect.
 
+Use it here: <https://tasdep.github.io/txt2gpx/>
+
 The app uses a Hershey single-line font so exported courses follow strokes rather
 than font outlines. By default it connects letters along the baseline, which
 keeps the Strava/Garmin trace intentional instead of adding random diagonals
